@@ -95,7 +95,7 @@ def dump_packet(data):
 def _scramble(password, message):
     if password == None or len(password) == 0:
         return int2byte(0)
-    if DEBUG: print('password=' + password)
+    if DEBUG: print('password=' + str(password))
     stage1 = sha_new(password).digest()
     stage2 = sha_new(stage1).digest()
     s = sha_new()
