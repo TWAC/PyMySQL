@@ -25,6 +25,7 @@ if PY2:
     import ConfigParser as configparser
 else:
     import configparser
+from functools import partial
 
 if PY2:
     try:
@@ -654,6 +655,10 @@ class Connection(object):
             exc,value,tb = sys.exc_info()
             self.errorhandler(None, exc, value)
 
+    def select_db(self, db):
+        self.db = db
+        self.query("USE %s" % db)
+
     def escape(self, obj):
         ''' Escape whatever value you pass to it  '''
         return escape_item(obj, self.charset)
@@ -1031,7 +1036,11 @@ class MySQLResult(object):
                 converter = self.connection.decoders[field.type_code]
                 if DEBUG: print("DEBUG: field={}, converter={}".format(field, converter))
                 if data != None:
-                    converted = converter(self.connection, field, data)
+                    if converter.__name__ == 'convert_characters':
+                        converter = partial(converter, self.connection, field)
+                    elif not isinstance(data, text_type):
+                        data = data.decode(self.connection.charset)
+                    converted = converter(data)
             row.append(converted)
 
         self.affected_rows = 1
@@ -1065,7 +1074,11 @@ class MySQLResult(object):
                 converter = self.connection.decoders[field.type_code]
                 if DEBUG: print("DEBUG: field={}, converter={}".format(field, converter))
                 if data != None:
-                    converted = converter(self.connection, field, data)
+                    if converter.__name__ == 'convert_characters':
+                        converter = partial(converter, self.connection, field)
+                    elif not isinstance(data, text_type):
+                        data = data.decode(self.connection.charset)
+                    converted = converter(data)
             row.append(converted)
 
         rows.append(tuple(row))
