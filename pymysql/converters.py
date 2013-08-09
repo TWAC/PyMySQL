@@ -71,6 +71,9 @@ def escape_string(value):
     return ("'%s'" % (ESCAPE_REGEX.sub(
             lambda match: ESCAPE_MAP.get(match.group(0)), value),))
 
+def escape_bytes(value):
+    return '0x' + ''.join([('0'+hex(c)[2:])[-2:] for c in value])
+
 def escape_unicode(value):
     return escape_string(value)
 
@@ -302,6 +305,7 @@ encoders = {
         datetime.timedelta : escape_timedelta,
         datetime.time : escape_time,
         time.struct_time : escape_struct_time,
+        bytes : escape_bytes,
         }
 
 decoders = {
