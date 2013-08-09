@@ -135,12 +135,12 @@ def _scramble_323(password, message):
 
     rand_st = RandStruct_323(hash_pass_n[0] ^ hash_message_n[0],
                              hash_pass_n[1] ^ hash_message_n[1])
-    outbuf = io.StringIO()
+    outbuf = io.BytesIO()
     for _ in range_type(min(SCRAMBLE_LENGTH_323, len(message))):
         outbuf.write(int2byte(int(rand_st.my_rnd() * 31) + 64))
     extra = int2byte(int(rand_st.my_rnd() * 31))
     out = outbuf.getvalue()
-    outbuf = io.StringIO()
+    outbuf = io.BytesIO()
     for c in out:
         outbuf.write(int2byte(byte2int(c) ^ byte2int(extra)))
     return outbuf.getvalue()
@@ -876,7 +876,7 @@ class Connection(object):
             # send legacy handshake
             #raise NotImplementedError, "old_passwords are not supported. Check to see if mysqld was started with --old-passwords, if old-passwords=1 in a my.cnf file, or if there are some short hashes in your mysql.user table."
             # TODO: is this the correct charset?
-            data = _scramble_323(self.password.encode(self.charset), self.salt.encode(self.charset)) + int2byte(0)
+            data = _scramble_323(self.password.encode(self.charset), self.salt) + int2byte(0)
             data = pack_int24(len(data)) + int2byte(next_packet) + data
 
             self.wfile.write(data)
